@@ -3,17 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/codegangsta/martini"
-	"github.com/coopernurse/gorp"
 	"net/http"
 )
 
 func main() {
 	m := martini.Classic()
 
-	m.Map(InitDb("dbname=test sslmode=disable"))
+	m.MapTo(UnitRepo, (*IUnitRepository)(nil))
 
-	m.Get("/unit", func(rw http.ResponseWriter, r *http.Request, db *gorp.DbMap) {
-		units := GetUnit(r, db)
+	m.Get("/unit", func(rw http.ResponseWriter, r *http.Request, repo IUnitRepository) {
+		units := repo.GetAll()
 
 		for _, u := range units {
 			fmt.Fprintf(rw, "%s", u.Address)

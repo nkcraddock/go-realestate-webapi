@@ -6,15 +6,21 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type UnitRepository interface {
+type IUnitRepository interface {
 	GetAll() []*Unit
 }
 
-func InitDb(connection string) *gorp.DbMap {
-	db, err := sql.Open("postgres", connection)
+type UnitRepository struct {
+}
+
+var UnitRepo IUnitRepository
+var dbmap *gorp.DbMap
+
+func init() {
+	dbConnection, err := sql.Open("postgres", "dbname=test sslmode=disable")
 	PanicIf(err)
 
-	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+	dbmap = &gorp.DbMap{Db: dbConnection, Dialect: gorp.PostgresDialect{}}
 
 	dbmap.AddTableWithName(Unit{}, "units").SetKeys(true, "Id")
 
@@ -22,7 +28,13 @@ func InitDb(connection string) *gorp.DbMap {
 
 	PanicIf(err)
 
-	return dbmap
+	UnitRepo = &UnitRepository{}
+}
+
+func (ur *UnitRepository) GetAll() (units []*Unit) {
+	_, err := dbmap.Select(&units, "select * from units")
+	PanicIf(err)
+	return
 }
 
 type Unit struct {
