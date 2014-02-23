@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/martini"
+	"github.com/martini-contrib/binding"
 )
 
 func main() {
@@ -11,8 +12,8 @@ func main() {
 
 	m.Get("/unit/:id", GetUnit)
 	m.Get("/unit", GetAllUnits)
-	m.Post("/unit", AddUnit)
-	m.Put("/unit", UpdateUnit)
+	m.Post("/unit", binding.Bind(Unit{}), AddUnit)
+	m.Put("/unit", binding.Bind(Unit{}), UpdateUnit)
 	m.Delete("/unit/:id", DeleteUnit)
 
 	m.Run()

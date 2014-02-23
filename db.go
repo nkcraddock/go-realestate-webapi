@@ -48,6 +48,11 @@ func (_ *UnitRepository) Add(u *Unit) {
 func (_ *UnitRepository) Get(id int) *Unit {
 	obj, err := dbmap.Get(Unit{}, id)
 	PanicIf(err)
+
+	if obj == nil {
+		return nil
+	}
+
 	return obj.(*Unit)
 }
 
@@ -61,9 +66,4 @@ func (_ *UnitRepository) Delete(u *Unit) int {
 	cnt, err := dbmap.Delete(u)
 	PanicIf(err)
 	return int(cnt)
-}
-
-type Unit struct {
-	Id      int
-	Address string
 }

@@ -7,33 +7,25 @@ import (
 	"strconv"
 )
 
-func GetAllUnits(rw http.ResponseWriter, r *http.Request, repo IUnitRepository) {
+func GetAllUnits(rw http.ResponseWriter, repo IUnitRepository) {
 	units := repo.GetAll()
-	jsonResponse, err := json.Marshal(units)
-	PanicIf(err)
-	rw.Write(jsonResponse)
+	writeJson(rw, units)
 }
 
-func AddUnit(rw http.ResponseWriter, r *http.Request, repo IUnitRepository) {
-	u := getUnitFromRequest(r)
-	repo.Add(u)
-	jsonResponse, err := json.Marshal(u.Id)
-	PanicIf(err)
-	rw.Write(jsonResponse)
+func AddUnit(rw http.ResponseWriter, u Unit, repo IUnitRepository) {
+	repo.Add(&u)
+	writeJson(rw, u.Id)
 }
 
 func GetUnit(rw http.ResponseWriter, parms martini.Params, repo IUnitRepository) {
 	id, err := strconv.Atoi(parms["id"])
 	PanicIf(err)
 	u := repo.Get(id)
-	jsonResponse, err := json.MarshalIndent(u, "", "    ")
-	PanicIf(err)
-	rw.Write(jsonResponse)
+	writeJson(rw, u)
 }
 
-func UpdateUnit(rw http.ResponseWriter, r *http.Request, repo IUnitRepository) {
-	u := getUnitFromRequest(r)
-	cnt := repo.Update(u)
+func UpdateUnit(rw http.ResponseWriter, u Unit, repo IUnitRepository) {
+	cnt := repo.Update(&u)
 	writeJson(rw, cnt)
 }
 
@@ -41,6 +33,11 @@ func DeleteUnit(rw http.ResponseWriter, parms martini.Params, repo IUnitReposito
 	id, err := strconv.Atoi(parms["id"])
 	PanicIf(err)
 	u := repo.Get(id)
+
+	if u == nil {
+		panic("Unit " + parms["id"] + " not found.")
+	}
+
 	cnt := repo.Delete(u)
 	writeJson(rw, cnt)
 }
@@ -49,17 +46,4 @@ func writeJson(rw http.ResponseWriter, o interface{}) {
 	jsonResponse, err := json.MarshalIndent(o, "", "    ")
 	PanicIf(err)
 	rw.Write(jsonResponse)
-}
-
-func getUnitFromRequest(r *http.Request) *Unit {
-	idstr, address := r.FormValue("id"), r.FormValue("address")
-	id, err := strconv.Atoi(idstr)
-	if err != nil {
-		id = 0
-	}
-
-	return &Unit{
-		Id:      id,
-		Address: address,
-	}
 }
