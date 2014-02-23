@@ -1,45 +1,47 @@
 package main
 
 type IUnitRepository interface {
-	GetAll() []*Unit
-	Get(id int) *Unit
-	Add(u *Unit)
-	Update(u *Unit) int
-	Delete(u *Unit) int
+	GetAll() interface{}
+	Get(id int) interface{}
+	Add(u interface{})
+	Update(u interface{}) int
+	Delete(u interface{}) int
 }
 
 type UnitRepository struct {
+	Type interface{}
 }
 
-func (_ *UnitRepository) GetAll() (units []*Unit) {
+func (_ *UnitRepository) GetAll() interface{} {
+	var units []Unit // figure out how to make this from Type
 	_, err := dbmap.Select(&units, "select * from units")
 	PanicIf(err)
-	return
+	return units
 }
 
-func (_ *UnitRepository) Add(u *Unit) {
+func (_ *UnitRepository) Add(u interface{}) {
 	err := dbmap.Insert(u)
 	PanicIf(err)
 }
 
-func (_ *UnitRepository) Get(id int) *Unit {
-	obj, err := dbmap.Get(Unit{}, id)
+func (repo *UnitRepository) Get(id int) interface{} {
+	obj, err := dbmap.Get(repo.Type, id)
 	PanicIf(err)
 
 	if obj == nil {
 		return nil
 	}
 
-	return obj.(*Unit)
+	return obj
 }
 
-func (_ *UnitRepository) Update(u *Unit) int {
+func (_ *UnitRepository) Update(u interface{}) int {
 	cnt, err := dbmap.Update(u)
 	PanicIf(err)
 	return int(cnt)
 }
 
-func (_ *UnitRepository) Delete(u *Unit) int {
+func (_ *UnitRepository) Delete(u interface{}) int {
 	cnt, err := dbmap.Delete(u)
 	PanicIf(err)
 	return int(cnt)

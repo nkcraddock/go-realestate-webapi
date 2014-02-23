@@ -19,7 +19,7 @@ func init() {
 	m.Use(martini.Logger())
 
 	// injection
-	m.MapTo(&UnitRepository{}, (*IUnitRepository)(nil))
+	m.MapTo(&UnitRepository{Type: Unit{}}, (*IUnitRepository)(nil))
 
 	// routes
 	r := martini.NewRouter()
