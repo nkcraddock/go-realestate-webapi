@@ -2,48 +2,68 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/codegangsta/martini"
 	"net/http"
 	"strconv"
 )
 
-func GetAllUnits(rw http.ResponseWriter, repo IUnitRepository) {
+func GetAllUnits(repo IUnitRepository) (int, string) {
 	units := repo.GetAll()
-	writeJson(rw, units)
+	return http.StatusOK, string(jsonEncode(units))
 }
 
-func AddUnit(rw http.ResponseWriter, u Unit, repo IUnitRepository) {
+func AddUnit(rw http.ResponseWriter, u Unit, repo IUnitRepository) (int, string) {
 	repo.Add(&u)
-	writeJson(rw, u.Id)
+	rw.Header().Set("Location", fmt.Sprintf("/unit/%d", u.Id))
+	return http.StatusCreated, ""
 }
 
-func GetUnit(rw http.ResponseWriter, parms martini.Params, repo IUnitRepository) {
+func GetUnit(parms martini.Params, repo IUnitRepository) (int, string) {
 	id, err := strconv.Atoi(parms["id"])
-	PanicIf(err)
-	u := repo.Get(id)
-	writeJson(rw, u)
-}
 
-func UpdateUnit(rw http.ResponseWriter, u Unit, repo IUnitRepository) {
-	cnt := repo.Update(&u)
-	writeJson(rw, cnt)
-}
+	if err != nil {
+		return notFound()
+	}
 
-func DeleteUnit(rw http.ResponseWriter, parms martini.Params, repo IUnitRepository) {
-	id, err := strconv.Atoi(parms["id"])
-	PanicIf(err)
 	u := repo.Get(id)
 
 	if u == nil {
-		panic("Unit " + parms["id"] + " not found.")
+		return notFound()
+	}
+
+	return http.StatusOK, string(jsonEncode(u))
+}
+
+func UpdateUnit(u Unit, repo IUnitRepository) (int, string) {
+	cnt := repo.Update(&u)
+	if cnt < 1 {
+		return notFound()
+	}
+	return http.StatusOK, string(cnt)
+}
+
+func DeleteUnit(parms martini.Params, repo IUnitRepository) (int, string) {
+	id, err := strconv.Atoi(parms["id"])
+	if err != nil {
+		return notFound()
+	}
+
+	u := repo.Get(id)
+	if u == nil {
+		return notFound()
 	}
 
 	cnt := repo.Delete(u)
-	writeJson(rw, cnt)
+	return http.StatusOK, string(cnt)
 }
 
-func writeJson(rw http.ResponseWriter, o interface{}) {
+func jsonEncode(o interface{}) []byte {
 	jsonResponse, err := json.MarshalIndent(o, "", "    ")
 	PanicIf(err)
-	rw.Write(jsonResponse)
+	return jsonResponse
+}
+
+func notFound() (int, string) {
+	return http.StatusNotFound, "Not found"
 }
