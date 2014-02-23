@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"github.com/codegangsta/martini"
-	"net/http"
 )
 
 func main() {
@@ -11,13 +9,11 @@ func main() {
 
 	m.MapTo(UnitRepo, (*IUnitRepository)(nil))
 
-	m.Get("/unit", func(rw http.ResponseWriter, r *http.Request, repo IUnitRepository) {
-		units := repo.GetAll()
-
-		for _, u := range units {
-			fmt.Fprintf(rw, "%s", u.Address)
-		}
-	})
+	m.Get("/unit/:id", GetUnit)
+	m.Get("/unit", GetAllUnits)
+	m.Post("/unit", AddUnit)
+	m.Put("/unit", UpdateUnit)
+	m.Delete("/unit/:id", DeleteUnit)
 
 	m.Run()
 }

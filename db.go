@@ -8,6 +8,10 @@ import (
 
 type IUnitRepository interface {
 	GetAll() []*Unit
+	Get(id int) *Unit
+	Add(u *Unit)
+	Update(u *Unit) int
+	Delete(u *Unit) int
 }
 
 type UnitRepository struct {
@@ -25,20 +29,41 @@ func init() {
 	dbmap.AddTableWithName(Unit{}, "units").SetKeys(true, "Id")
 
 	err = dbmap.CreateTablesIfNotExists()
-
 	PanicIf(err)
 
 	UnitRepo = &UnitRepository{}
 }
 
-func (ur *UnitRepository) GetAll() (units []*Unit) {
+func (_ *UnitRepository) GetAll() (units []*Unit) {
 	_, err := dbmap.Select(&units, "select * from units")
 	PanicIf(err)
 	return
 }
 
+func (_ *UnitRepository) Add(u *Unit) {
+	err := dbmap.Insert(u)
+	PanicIf(err)
+}
+
+func (_ *UnitRepository) Get(id int) *Unit {
+	obj, err := dbmap.Get(Unit{}, id)
+	PanicIf(err)
+	return obj.(*Unit)
+}
+
+func (_ *UnitRepository) Update(u *Unit) int {
+	cnt, err := dbmap.Update(u)
+	PanicIf(err)
+	return int(cnt)
+}
+
+func (_ *UnitRepository) Delete(u *Unit) int {
+	cnt, err := dbmap.Delete(u)
+	PanicIf(err)
+	return int(cnt)
+}
+
 type Unit struct {
-	Id      int64
+	Id      int
 	Address string
-	Created int64
 }
