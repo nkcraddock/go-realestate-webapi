@@ -15,6 +15,7 @@ func InitDb(connection string) *gorp.DbMap {
 	PanicIf(err)
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+
 	dbmap.AddTableWithName(Unit{}, "units").SetKeys(true, "Id")
 
 	err = dbmap.CreateTablesIfNotExists()

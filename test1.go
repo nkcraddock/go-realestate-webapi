@@ -13,8 +13,8 @@ func main() {
 	m.Map(InitDb("dbname=test sslmode=disable"))
 
 	m.Get("/unit", func(rw http.ResponseWriter, r *http.Request, db *gorp.DbMap) {
-		units, err := GetUnit(r, db)
-		PanicIf(err)
+		units := GetUnit(r, db)
+
 		for _, u := range units {
 			fmt.Fprintf(rw, "%s", u.Address)
 		}

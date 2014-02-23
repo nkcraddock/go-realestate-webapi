@@ -5,7 +5,8 @@ import (
 	"net/http"
 )
 
-func GetUnit(r *http.Request, db *gorp.DbMap) (units []Unit, err error) {
-	_, err = db.Select(&units, "select * from units")
+func GetUnit(r *http.Request, db *gorp.DbMap) (units []Unit) {
+	_, err := db.Select(&units, "select * from units")
+	PanicIf(err)
 	return
 }
