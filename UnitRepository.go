@@ -12,9 +12,8 @@ type UnitRepository struct {
 	Type interface{}
 }
 
-func (_ *UnitRepository) GetAll() interface{} {
-	var units []Unit // figure out how to make this from Type
-	_, err := dbmap.Select(&units, "select * from units")
+func (repo *UnitRepository) GetAll() interface{} {
+	units, err := dbmap.Select(repo.Type, "select * from units")
 	PanicIf(err)
 	return units
 }
